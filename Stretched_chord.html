@@ -19,7 +19,7 @@ body {
 }
 
 </style>
-<svg width="960" height="960"></svg>
+<svg width="960" height="720"></svg>
 <script src="https://d3js.org/d3.v4.min.js"></script>
 <script src="d3_stretched_chord.js"></script>
 
@@ -66,7 +66,7 @@ var early_matrix = [
 //   [5, 10, 0, 0, 0]
 // ];
 
-var group1_names = ["Pvt hospital", "Govt hospital", "Govt Mother & Child Health center", "Private clinic/ maternity home", "Respondent's home", "Other home", "Other public", "RHC", "BHU", "Other_","CMW home/birth station","Other private medical"];
+var group1_names = ["Private hospital", "Government hospital", "Govt Mother & Child Health center", "Private clinic/ maternity home", "Respondent's home", "Other home", "Other public", "RHC", "BHU", "Other_","CMW home/birth station","Other private medical"];
 var group2_names = ["Other","No one","Relatives/ Friends","Nurse","Lady Health Vistor (LHV)","Traditional Birth Attendant (TBA)","Community Midwife (CMW)","Doctor"];
 
 
@@ -138,13 +138,13 @@ console.log(matrix);
 var svg = d3.select("svg"),
     width = +svg.attr("width"),
     height = +svg.attr("height"),
-    outerRadius = Math.min(width, height) * 0.5 - 205,
+    outerRadius = Math.min(width, height) * 0.5 - 85 , //205
     innerRadius = outerRadius - 13;
 
 var formatValue = d3.formatPrefix(",.0", 1);
 
 var chord = d3.chord()
-    .padAngle(0.02)
+    .padAngle(0.015)
     .sortSubgroups(d3.descending)
     //.pullOutSize(pullOutSize);
     // .startAngle(startAngle)
@@ -184,7 +184,9 @@ var group = g.append("g")
   .selectAll("g")
   .data(function(chords) { return chords.groups; })
   .enter().append("g")
-  .attr("class", function(d) { return group_names[d.index]});
+  .attr("class", function(d) { return group_names[d.index]})
+  .classed("holder_group", true);
+
 
 var non_dummy_grps = d3.selectAll(".groups")
                         .selectAll("g :not(.Dummy)");
@@ -199,11 +201,18 @@ group.append("path")
     // #6699ff
     //.style("stroke", function(d) { return d3.rgb(color(d.index)).darker(); })
     .attr("class", function(d) { return group_names[d.index] } )
+    .classed("group_arc", true)
     .attr("d", arc)
     .attr("transform",function(d, i){
       d.pullOutSize = pullOutSize * ((d.startAngle + d.endAngle)/2  > Math.PI ? -1 : 1);
       return "translate(" + d.pullOutSize + "," + 0 + ")";
-    });
+    })
+
+d3.selectAll('.holder_group')
+    .on("mouseover", fade(0.1, 0.8, 1))
+    .on("mouseout", fade(0.67, 0.67, 0.1));
+    //})
+
 
 var groupTick = non_dummy_grps.selectAll(".group-tick")
   .data(function(d) { return groupTicks(d, 1); })
@@ -218,17 +227,36 @@ var groupTick = non_dummy_grps.selectAll(".group-tick")
     //   return "translate(" + d.pullOutSize + "," + 0 + ")";
     // });;
 
-groupTick.append("line")
-    .attr("x2", 6);
+// groupTick.append("line")
+//     .attr("x2", 6);
+//
+// groupTick
+//   .filter(function(d) { return d.value % 5 === 0; })
+//   .append("text")
+//     .attr("x", 8)
+//     .attr("dy", ".35em")
+//     .attr("transform", function(d) { return d.angle > Math.PI ? "rotate(180) translate(-16)" : null; })
+//     .style("text-anchor", function(d) { return d.angle > Math.PI ? "end" : null; })
+//     .text(function(d) { return formatValue(d.value); });
 
-groupTick
-  .filter(function(d) { return d.value % 5 === 0; })
-  .append("text")
-    .attr("x", 8)
-    .attr("dy", ".35em")
-    .attr("transform", function(d) { return d.angle > Math.PI ? "rotate(180) translate(-16)" : null; })
-    .style("text-anchor", function(d) { return d.angle > Math.PI ? "end" : null; })
-    .text(function(d) { return formatValue(d.value); });
+// try adding the labels
+
+var label_pad = 10;
+
+group.append("text")
+    .attr("class", function(d) { return group_names[d.index] } )
+    .each(function(d) { d.angle = (d.startAngle + d.endAngle) / 2; })
+    .text(function(d, i) { return group_names[d.index] } )
+    .attr("text-anchor", function(d) { return d.angle > Math.PI ? "end" : null; })
+    .attr("transform", function(d) {
+        d.pullOutSize = pullOutSize * (d.angle > Math.PI ? -1 : 1);
+        return "translate(" + d.pullOutSize + ") "
+            + "rotate(" + ((d.angle + offset_angle) * 180 / Math.PI - 90) + ")"
+            + "translate(" + (outerRadius + label_pad) + ")"
+            + (d.angle > Math.PI ? "rotate(180)" : "");
+    })
+    .style("opacity", function(d, i) { return (d.value/ 100) < 0.01 ? 0.1 : 1 })
+
 
 g.append("g")
     .attr("class", "ribbons")
@@ -237,8 +265,9 @@ g.append("g")
   .enter().append("path")
     .attr("d", ribbon)
     //.style("fill", function(d) { return color(d.target.index); })
-    .style("fill", "D3D3D3")
+    .style("fill", "#D3D3D3")
     .attr("class", function(d, i) { return d.target.index == total_no + 1 ? "Dummy" : "NonDummy"; })
+    .classed("ribbon_path", true);
     //.style("stroke", function(d) { return d3.rgb(color(d.target.index)).darker(); });
 
 // Returns an array of tick angles and values for a given group and step.
@@ -247,6 +276,29 @@ function groupTicks(d, step) {
   return d3.range(0, d.value, step).map(function(value) {
     return {value: value, angle: value * k + (d.startAngle + offset_angle + 0.005)};
   });
+}
+
+//var svg = s3.select("svg");
+
+// Returns an event handler for fading a given chord group.
+function fade(opacity1, opacity2, text_opacity) {
+  return function(d, i) {
+    var group_idx = d.index
+    var value = d.value;
+    d3.selectAll(".ribbon_path")
+      .filter(function(d) { return d.source.index != group_idx && d.target.index != group_idx; })
+      .transition()
+        .style("fill-opacity", opacity1);
+    d3.selectAll(".ribbon_path")
+      .filter(function(d) { return d.source.index == group_idx && d.target.index == group_idx; })
+      .transition()
+        .style("fill-opacity", opacity2);
+
+    d3.select(this).select('text')
+      .filter(function(d) { return d.value/ 100 < 0.01 })
+      .transition()
+        .style("opacity", text_opacity);
+  };
 }
 
 </script>
