@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+body {
+  font: 10px sans-serif;
+}
+
+.group-tick line {
+  stroke: #000;
+}
+
+.ribbons {
+  fill-opacity: 0.67;
+}
+
+.Dummy {
+  opacity: 0.0
+}
+
+</style>
+<svg width="960" height="960"></svg>
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<script src="d3_stretched_chord.js"></script>
+
+<script>
+
+var early_matrix = [
+  [0,0,0,0,0,0,0,0,0,0,0,0,0.0151285754993426,0,0.0518473002003632,2.73541007078455,0.828620573151337,0.0451953090163421,0.163844194032935,35.836239436967],
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0.000614443660384447,0.0450806761442615,3.29089250571661,0.664772149502223,0.0441396454260848,0.12363369716987,17.2677970070127],
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.152434855594515,0.230299361448876,0.0145558714545113,0.0377076694258343,0.399385004063615],
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.0136252628263728,0.808411208095924,1.30964638874836,0.138725540798948,0.110463993669776,2.74907804005385],
+  [0,0,0,0,0,0,0,0,0,0,0,0,0.00274213125665268,0.0334839218208002,0.949088664316574,0.685848404858807,0.612733195103625,18.5803972046021,1.0027956709223,0.495545371899067],
+  [0,0,0,0,0,0,0,0,0,0,0,0,0.00542307567466032,0.0034325453259032,0.0202258691065055,0.266141217281322,0.130766155456765,1.26434921610419,0.0271512489887922,0.0408782957360215],
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.00543514538225534,0,0,0,0.218956674741719],
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.53809516216267,0.595757265694071,0,0.0824805134994678,0.99497885645232],
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.00874830882224031,1.05676121748795,3.08883254587064,0.00947107224970259,0.336216261098241,1.10680324939578],
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0.00564072204620875,0.00620034608352639,0,0,0,0,0],
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.0841850465218208,0.0637958618746478,0.0214007679982468,0.529790502585937,0.034683791559702],
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.0132157194602717],
+  [0.0151285754993426,0,0,0,0.00274213125665268,0.00542307567466032,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+  [0,0.000614443660384447,0,0,0.0334839218208002,0.0034325453259032,0,0,0,0.00564072204620875,0,0,0,0,0,0,0,0,0,0],
+  [0.0518473002003632,0.0450806761442615,0,0.0136252628263728,0.949088664316574,0.0202258691065055,0,0,0.00874830882224031,0.00620034608352639,0,0,0,0,0,0,0,0,0,0],
+  [2.73541007078455,3.29089250571661,0.152434855594515,0.808411208095924,0.685848404858807,0.266141217281322,0.00543514538225534,0.53809516216267,1.05676121748795,0,0.0841850465218208,0,0,0,0,0,0,0,0,0],
+  [0.828620573151337,0.664772149502223,0.230299361448876,1.30964638874836,0.612733195103625,0.130766155456765,0,0.595757265694071,3.08883254587064,0,0.0637958618746478,0,0,0,0,0,0,0,0,0],
+  [0.0451953090163421,0.0441396454260848,0.0145558714545113,0.138725540798948,18.5803972046021,1.26434921610419,0,0,0.00947107224970259,0,0.0214007679982468,0,0,0,0,0,0,0,0,0],
+  [0.163844194032935,0.12363369716987,0.0377076694258343,0.110463993669776,1.0027956709223,0.0271512489887922,0,0.0824805134994678,0.336216261098241,0,0.529790502585937,0,0,0,0,0,0,0,0,0],
+  [35.836239436967,17.2677970070127,0.399385004063615,2.74907804005385,0.495545371899067,0.0408782957360215,0.218956674741719,0.99497885645232,1.10680324939578,0,0.034683791559702,0.0132157194602717,0,0,0,0,0,0,0,0]
+];
+
+
+// var early_matrix = [
+//   [0, 0, 0, 0.1, 5 + 9.9, 15],
+//   [0, 0, 0, 0.1, 15 + 4.9, 20],
+//   [0, 0, 0, 0.1, 14.9 + 5, 5],
+//   [0.1, 0.1, 0.1, 0, 0, 0],
+//   [5 + 9.9, 15 + 4.9, 5 + 14.9, 0, 0, 0],
+//   [15, 20, 5, 0, 0, 0]
+// ];
+
+// var early_matrix = [
+//   [0, 0, 10, 15, 5],
+//   [0, 0, 6, 8, 10],
+//   [10, 6, 0, 0, 0],
+//   [15, 8, 0, 0, 0],
+//   [5, 10, 0, 0, 0]
+// ];
+
+var group1_names = ["Pvt hospital", "Govt hospital", "Govt Mother & Child Health center", "Private clinic/ maternity home", "Respondent's home", "Other home", "Other public", "RHC", "BHU", "Other_","CMW home/birth station","Other private medical"];
+var group2_names = ["Other","No one","Relatives/ Friends","Nurse","Lady Health Vistor (LHV)","Traditional Birth Attendant (TBA)","Community Midwife (CMW)","Doctor"];
+
+
+// var group1_names = ["Doctor", "Nurse", "LHV"];
+// var group2_names = ["Public", "Private", "RHC"];
+
+var group_names = group1_names.concat("Dummy", group2_names, "Dummy");
+
+
+total_no = early_matrix[1].length;
+empty_area_perc = 0.4
+empty_am = total_no * empty_area_perc;
+var offset_angle = ((empty_am)/(empty_am + total_no)) * Math.PI/ 2;
+var offset_degrees = offset_angle * (180/ Math.PI);
+
+console.log(offset_degrees);
+
+function startAngle(d) {return d.startAngle + offset_angle};
+function endAngle(d) {return d.endAngle + offset_angle};
+
+// function to add dummy arrays in the matrix for stretched chord
+function add_dummies_to_matrix(matrix, empty_area_perc){
+  // create a single array from the input matrix
+  var matrix_arr = matrix.reduce(function(result, elem){return result.concat(elem)})
+  // take the sum of the above array and divide by 2 (to get the total sum)
+  var total_sum = matrix_arr.reduce(function(result, elem) { return result + elem })/ 2;
+
+  // gettimg the number of sub groups in group 1 and total number of subgroups
+  var group2_no = group2_names.length;
+  var group1_no = group1_names.length;
+  var total_no = matrix[1].length;
+
+  // adding zeros for dummys
+  for (var i = 0; i < matrix.length; i++){
+    //early_matrix[i] = early_matrix[i].push(0);
+    var group1_vals = matrix[i].slice(0, group1_no);
+    var group2_vals = matrix[i].slice(group1_no,total_no);
+
+    matrix[i] = group1_vals.concat(0, group2_vals, 0);
+  }
+
+  // getting empty/ dummy no through the percentage of empty/ dummy arc
+  var empty_no = empty_area_perc * total_sum;
+
+  // adding the empty_no into the dummy arrays
+  zeros1 = a = new Array(total_no + 2).fill(0);
+  zeros1[total_no + 2 - 1] = empty_no;
+  zeros1 = [zeros1];
+
+  zeros2 = new Array(total_no + 2).fill(0);
+  zeros2[group1_no] = empty_no;
+  zeros2 = [zeros2];
+
+  // cutting the matrix into two halfs to put in dummy arrays
+  matrix_1 = matrix.slice(0, group1_no);
+  matrix_2 = matrix.slice(group1_no, total_no);
+
+  // concatenating dummy arrays with the matrix halves
+  var matrix_with_dummy = matrix_1.concat(zeros1, matrix_2, zeros2);
+
+  return matrix_with_dummy;
+}
+
+var matrix = add_dummies_to_matrix(early_matrix, empty_area_perc);
+
+console.log(matrix);
+
+
+var svg = d3.select("svg"),
+    width = +svg.attr("width"),
+    height = +svg.attr("height"),
+    outerRadius = Math.min(width, height) * 0.5 - 205,
+    innerRadius = outerRadius - 13;
+
+var formatValue = d3.formatPrefix(",.0", 1);
+
+var chord = d3.chord()
+    .padAngle(0.02)
+    .sortSubgroups(d3.descending)
+    //.pullOutSize(pullOutSize);
+    // .startAngle(startAngle)
+    // .endAngle(endAngle);
+
+var arc = d3.arc()
+    .innerRadius(innerRadius)
+    .outerRadius(outerRadius)
+    .startAngle(startAngle)
+    .endAngle(endAngle);
+
+var pullOutSize = 15;
+
+var ribbon = stretchedChord()
+  //d3.ribbon()
+    .radius(innerRadius)
+    .startAngle(startAngle)
+    .endAngle(endAngle)
+    .pullOutSize(pullOutSize);
+
+// var group1_names = ["Doctor", "Nurse", "LHV"];
+// var group2_names = ["Public", "Private", "RHC"];
+
+
+console.log(group_names);
+
+// var color = d3.scaleOrdinal()
+//     .domain(d3.range(8))
+//     .range(["#D3D3D3", "#D3D3D3", "#D3D3D3", "#FFFFFF","#000000", "#FFDD89", "#957244", "#FFFFFF"]);
+
+var g = svg.append("g")
+    .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")")
+    .datum(chord(matrix));
+
+var group = g.append("g")
+    .attr("class", "groups")
+  .selectAll("g")
+  .data(function(chords) { return chords.groups; })
+  .enter().append("g")
+  .attr("class", function(d) { return group_names[d.index]});
+
+var non_dummy_grps = d3.selectAll(".groups")
+                        .selectAll("g :not(.Dummy)");
+
+console.log(chord(matrix));
+
+
+
+group.append("path")
+    //.style("fill", function(d) { return color(d.index); })
+    .style("fill", "#6699ff")
+    // #6699ff
+    //.style("stroke", function(d) { return d3.rgb(color(d.index)).darker(); })
+    .attr("class", function(d) { return group_names[d.index] } )
+    .attr("d", arc)
+    .attr("transform",function(d, i){
+      d.pullOutSize = pullOutSize * ((d.startAngle + d.endAngle)/2  > Math.PI ? -1 : 1);
+      return "translate(" + d.pullOutSize + "," + 0 + ")";
+    });
+
+var groupTick = non_dummy_grps.selectAll(".group-tick")
+  .data(function(d) { return groupTicks(d, 1); })
+  .enter().append("g")
+    .attr("class", "group-tick")
+    .attr("transform", function(d) {
+      d.pullOutSize = pullOutSize * (d.angle > Math.PI ? -1 : 1);
+      return "translate(" + d.pullOutSize + ") " + "rotate(" + (d.angle * 180 / Math.PI - 90) + ") translate(" + (outerRadius + 5) + ")";
+    })
+    // .attr("transform",function(d, i){
+    //   d.pullOutSize = pullOutSize * (d.startAngle > Math.PI ? -1 : 1);
+    //   return "translate(" + d.pullOutSize + "," + 0 + ")";
+    // });;
+
+groupTick.append("line")
+    .attr("x2", 6);
+
+groupTick
+  .filter(function(d) { return d.value % 5 === 0; })
+  .append("text")
+    .attr("x", 8)
+    .attr("dy", ".35em")
+    .attr("transform", function(d) { return d.angle > Math.PI ? "rotate(180) translate(-16)" : null; })
+    .style("text-anchor", function(d) { return d.angle > Math.PI ? "end" : null; })
+    .text(function(d) { return formatValue(d.value); });
+
+g.append("g")
+    .attr("class", "ribbons")
+  .selectAll("path")
+  .data(function(chords) { return chords; })
+  .enter().append("path")
+    .attr("d", ribbon)
+    //.style("fill", function(d) { return color(d.target.index); })
+    .style("fill", "D3D3D3")
+    .attr("class", function(d, i) { return d.target.index == total_no + 1 ? "Dummy" : "NonDummy"; })
+    //.style("stroke", function(d) { return d3.rgb(color(d.target.index)).darker(); });
+
+// Returns an array of tick angles and values for a given group and step.
+function groupTicks(d, step) {
+  var k = (d.endAngle - d.startAngle) / d.value;
+  return d3.range(0, d.value, step).map(function(value) {
+    return {value: value, angle: value * k + (d.startAngle + offset_angle + 0.005)};
+  });
+}
+
+</script>
